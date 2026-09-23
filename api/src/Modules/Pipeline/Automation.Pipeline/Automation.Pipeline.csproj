@@ -1,0 +1,37 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <ItemGroup>
+      <ProjectReference Include="..\..\..\SharedKernel\Automation.SharedKernel\Automation.SharedKernel.csproj" />
+      <ProjectReference Include="..\..\Files\Automation.Files.Contracts\Automation.Files.Contracts.csproj" />
+      <ProjectReference Include="..\..\Tag\Automation.Tag.Contracts\Automation.Tag.Contracts.csproj" />
+      <ProjectReference Include="..\..\Workspace\Automation.Workspace.Contracts\Automation.Workspace.Contracts.csproj" />
+      <ProjectReference Include="..\..\Projects\Automation.Projects.Contracts\Automation.Projects.Contracts.csproj" />
+      <ProjectReference Include="..\..\Content\Automation.Content.Contracts\Automation.Content.Contracts.csproj" />
+      <ProjectReference Include="..\..\DynamicForms\Automation.DynamicForms.Contracts\Automation.DynamicForms.Contracts.csproj" />
+    </ItemGroup>
+
+
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Grpc.AspNetCore" Version="2.83.0" />
+        <PackageReference Include="Grpc.Tools" Version="2.83.0">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="TreeSitter.DotNet" Version="1.3.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Protobuf Include="$(SharedProtoDir)execution_state.proto" ProtoRoot="$(SharedProtoDir)" GrpcServices="Server" Link="Protos\execution_state.proto" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <InternalsVisibleTo Include="Automation.Api" />
+    </ItemGroup>
+
+</Project>

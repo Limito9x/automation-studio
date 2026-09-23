@@ -1,0 +1,17 @@
+{
+    "page": {
+        "title": "Quản lý Role",
+        "description": "Quản lý tất cả role trong hệ thống.",
+        "listCaption": "Danh sách Role",
+        "searchPlaceholder": "Tìm kiếm role..."
+    },
+    "actions": {
+        "create": "Tạo Role",
+        "update": "Sửa Role",
+        "delete": "Xóa Role",
+        "deleteConfirm": "Bạn có chắc chắn muốn xóa role này? Hành động này không thể hoàn tác."
+    },
+    "fields": {
+        "name": "Tên"
+    }
+}

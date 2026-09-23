@@ -1,0 +1,47 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+
+
+    <ItemGroup>
+      <PackageReference Include="FastEndpoints" Version="8.2.0" />
+      <PackageReference Include="FastEndpoints.Generator" Version="8.2.0" />
+      <PackageReference Include="FluentResults" Version="4.0.0" />
+      <PackageReference Include="Gridify" Version="2.19.1" />
+      <PackageReference Include="JasperFx.RuntimeCompiler" Version="5.0.0" />
+      <PackageReference Include="Mapster" Version="10.0.11" />
+      <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.10" />
+      <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.10" />
+      <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.0" />
+      <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.17.0" />
+      <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="1.17.0" />
+      <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.17.0" />
+      <PackageReference Include="OpenTelemetry.Instrumentation.EntityFrameworkCore" Version="1.17.0-beta.1" />
+      <PackageReference Include="OpenTelemetry.Instrumentation.Http" Version="1.17.0" />
+      <PackageReference Include="OpenTelemetry.Instrumentation.Runtime" Version="1.17.0" />
+      <PackageReference Include="Serilog.AspNetCore" Version="10.0.0" />
+      <PackageReference Include="Serilog.Enrichers.CorrelationId" Version="3.0.1" />
+      <PackageReference Include="Serilog.Enrichers.Environment" Version="3.0.1" />
+      <PackageReference Include="Serilog.Enrichers.Thread" Version="4.0.0" />
+      <PackageReference Include="Serilog.Exceptions" Version="8.4.0" />
+      <PackageReference Include="Serilog.Exceptions.EntityFrameworkCore" Version="8.4.0" />
+      <PackageReference Include="Serilog.Sinks.Async" Version="2.1.0" />
+      <PackageReference Include="Serilog.Sinks.OpenTelemetry" Version="4.2.0" />
+      <PackageReference Include="StackExchange.Redis" Version="3.0.17" />
+      <PackageReference Include="TickerQ" Version="10.4.0" />
+      <PackageReference Include="TickerQ.Caching.StackExchangeRedis" Version="10.4.0" />
+      <PackageReference Include="TickerQ.Dashboard" Version="10.4.0" />
+      <PackageReference Include="TickerQ.Utilities" Version="10.4.0" />
+      <PackageReference Include="WolverineFx" Version="6.22.0" />
+      <PackageReference Include="WolverineFx.EntityFrameworkCore" Version="6.22.0" />
+      <PackageReference Include="WolverineFx.Postgresql" Version="6.22.0" />
+      <PackageReference Include="WolverineFx.RabbitMQ" Version="6.22.0" />
+      <PackageReference Include="ZiggyCreatures.FusionCache" Version="2.6.0" />
+    </ItemGroup>
+
+</Project>

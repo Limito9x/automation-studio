@@ -1,0 +1,12 @@
+bin/
+obj/
+/packages/
+riderModule.iml
+/_ReSharper.Caches/
+.vs/
+logs/
+Generated/
+appsettings.*.json
+appsettings.json
+tools/
+rename-template.ps1

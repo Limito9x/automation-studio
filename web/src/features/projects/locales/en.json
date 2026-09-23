@@ -1,0 +1,17 @@
+{
+    "page": {
+        "title": "Project Management",
+        "description": "Manage all projects in the system.",
+        "listCaption": "Project List",
+        "searchPlaceholder": "Search projects..."
+    },
+    "actions": {
+        "create": "Create Project",
+        "update": "Edit Project",
+        "delete": "Delete Project",
+        "deleteConfirm": "Are you sure you want to delete this project? This action cannot be undone."
+    },
+    "fields": {
+        "name": "Name"
+    }
+}

@@ -1,0 +1,17 @@
+{
+    "page": {
+        "title": "Quản lý Loại nội dung",
+        "description": "Quản lý tất cả loại nội dung trong hệ thống.",
+        "listCaption": "Danh sách Loại nội dung",
+        "searchPlaceholder": "Tìm kiếm loại nội dung..."
+    },
+    "actions": {
+        "create": "Tạo Loại nội dung",
+        "update": "Sửa Loại nội dung",
+        "delete": "Xóa Loại nội dung",
+        "deleteConfirm": "Bạn có chắc chắn muốn xóa loại nội dung này? Hành động này không thể hoàn tác."
+    },
+    "fields": {
+        "name": "Tên"
+    }
+}

@@ -1,0 +1,17 @@
+{
+    "page": {
+        "title": "ContentItem Management",
+        "description": "Manage all contentItems in the system.",
+        "listCaption": "ContentItem List",
+        "searchPlaceholder": "Search contentItems..."
+    },
+    "actions": {
+        "create": "Create ContentItem",
+        "update": "Edit ContentItem",
+        "delete": "Delete ContentItem",
+        "deleteConfirm": "Are you sure you want to delete this contentItem? This action cannot be undone."
+    },
+    "fields": {
+        "name": "Name"
+    }
+}

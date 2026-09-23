@@ -1,0 +1,95 @@
+syntax = "proto3";
+
+option csharp_namespace = "Automation.Agent.Grpc";
+
+package automation.agent;
+
+service AgentService {
+    rpc Connect(stream AgentMessage)
+        returns (stream ServerMessage);
+}
+
+// =========================================================================
+// Messages from Agent to Server
+// =========================================================================
+
+message AgentMessage {
+    string agent_id = 1;
+    oneof payload {
+        CommandResponse command_response = 2;
+    }
+}
+
+message CommandResponse {
+    string command_id = 1;
+    bool success = 2;
+    string error_message = 3;
+
+    oneof result {
+        ScanCommandResult scan_result = 4;
+        BrowseCommandResult browse_result = 5;
+        ScanExecutorsCommandResult scan_executors_result = 6;
+    }
+}
+
+message ScanCommandResult {
+    repeated ResourceItemMessage items = 1;
+}
+
+message BrowseCommandResult {
+    string current_path = 1;
+    string parent_path = 2;
+    bool can_navigate_up = 3;
+    repeated BrowseItemMessage items = 4;
+}
+
+message ScanExecutorsCommandResult {
+    repeated ExecutorCandidateMessage items = 1;
+}
+
+message ExecutorCandidateMessage {
+    string executor_key = 1;
+    string executable_path = 2;
+    string version = 3;
+}
+
+message ResourceItemMessage {
+    string relative_path = 1;
+    string hash = 2;
+    int64 size_bytes = 3;
+}
+
+message BrowseItemMessage {
+    string name = 1;
+    string path = 2;
+    bool is_directory = 3;
+    int64 size_bytes = 4;
+}
+
+// =========================================================================
+// Messages from Server to Agent
+// =========================================================================
+
+message ServerMessage {
+    oneof payload {
+        ScanCommand scan_command = 1;
+        BrowseCommand browse_command = 2;
+        ScanExecutorsCommand scan_executors_command = 3;
+    }
+}
+
+message ScanCommand {
+    string command_id = 1;
+    string directory_path = 2;
+    repeated string extensions = 3;
+}
+
+message BrowseCommand {
+    string command_id = 1;
+    string directory_path = 2;
+}
+
+message ScanExecutorsCommand {
+    string command_id = 1;
+    string executor_key = 2;
+}

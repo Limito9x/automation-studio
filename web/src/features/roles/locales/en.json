@@ -1,0 +1,17 @@
+{
+    "page": {
+        "title": "Role Management",
+        "description": "Manage all roles in the system.",
+        "listCaption": "Role List",
+        "searchPlaceholder": "Search roles..."
+    },
+    "actions": {
+        "create": "Create Role",
+        "update": "Edit Role",
+        "delete": "Delete Role",
+        "deleteConfirm": "Are you sure you want to delete this role? This action cannot be undone."
+    },
+    "fields": {
+        "name": "Name"
+    }
+}

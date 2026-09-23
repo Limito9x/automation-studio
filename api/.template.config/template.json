@@ -1,0 +1,31 @@
+﻿{
+  "$schema": "http://json.schemastore.org/template",
+  "author": "Limito9x",
+  "classifications": ["Web", "API", "ModularMonolith"],
+  "name": "Dotnet Modular Monolith Template",
+  "identity": "Automation.Template",
+  "shortName": "modular-backend",
+  "tags": {
+    "language": "C#",
+    "type": "project"
+  },
+  "sourceName": "Automation",
+  "preferNameDirectory": true,
+  "sources": [
+    {
+      "modifiers": [
+        {
+          "exclude": [
+            "**/bin/**",
+            "**/obj/**",
+            "**/.vs/**",
+            "**/.idea/**",
+            "**/.git/**"
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+

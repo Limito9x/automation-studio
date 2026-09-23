@@ -1,0 +1,17 @@
+{
+    "page": {
+        "title": "Quản lý Project",
+        "description": "Quản lý tất cả project trong hệ thống.",
+        "listCaption": "Danh sách Project",
+        "searchPlaceholder": "Tìm kiếm project..."
+    },
+    "actions": {
+        "create": "Tạo Project",
+        "update": "Sửa Project",
+        "delete": "Xóa Project",
+        "deleteConfirm": "Bạn có chắc chắn muốn xóa project này? Hành động này không thể hoàn tác."
+    },
+    "fields": {
+        "name": "Tên"
+    }
+}

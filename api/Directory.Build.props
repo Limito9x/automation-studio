@@ -1,0 +1,6 @@
+<Project>
+    <PropertyGroup>
+        <MonorepoRoot>$(MSBuildThisFileDirectory)..\</MonorepoRoot>
+        <SharedProtoDir>$(MonorepoRoot)packages\proto\</SharedProtoDir>
+    </PropertyGroup>
+</Project>

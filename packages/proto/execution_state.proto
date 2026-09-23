@@ -1,0 +1,54 @@
+syntax = "proto3";
+
+option csharp_namespace = "Automation.Pipeline.Grpc";
+
+package automation.pipeline;
+
+service ExecutionStateService {
+    // Agent requests resolved input values for a step
+    rpc GetStepInputs(GetStepInputsRequest) returns (GetStepInputsResponse);
+    
+    // Agent reports step execution outputs and logs
+    rpc ReportStepOutput(ReportStepOutputRequest) returns (ReportStepOutputResponse);
+}
+
+message InputMappingItem {
+    string pin_key = 1;
+    string source_kind = 2; // "start_input" | "node_output" | "literal"
+    string source_node_id = 3;
+    string source_pin_key = 4;
+    string literal_value_json = 5;
+}
+
+message GetStepInputsRequest {
+    string access_token = 1;
+    string pipeline_execution_id = 2;
+    string stage_execution_id = 3;
+    string step_execution_id = 4;
+    repeated InputMappingItem input_mappings = 5;
+    string scope_id = 6;
+    int32 iteration_index = 7;
+}
+
+message GetStepInputsResponse {
+    bool success = 1;
+    string error_message = 2;
+    // Map of pin_key -> JSON string representation of the value
+    map<string, string> inputs_json = 3;
+}
+
+message ReportStepOutputRequest {
+    string access_token = 1;
+    string pipeline_execution_id = 2;
+    string stage_execution_id = 3;
+    string step_execution_id = 4;
+    map<string, string> outputs_json = 5;
+    string log = 6;
+    string scope_id = 7;
+    int32 iteration_index = 8;
+}
+
+message ReportStepOutputResponse {
+    bool success = 1;
+    string error_message = 2;
+}

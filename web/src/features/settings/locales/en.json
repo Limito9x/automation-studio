@@ -1,0 +1,51 @@
+{
+  "profile": {
+    "title": "Profile",
+    "description": "Manage your public profile and personal information.",
+    "settings": "Settings",
+    "form": {
+      "firstName": "First Name",
+      "firstNamePlaceholder": "e.g. John",
+      "lastName": "Last Name",
+      "lastNamePlaceholder": "e.g. Doe",
+      "displayName": "Display Name",
+      "displayNamePlaceholder": "e.g. John Doe",
+      "displayNameDescription": "This is how others will see you on the site.",
+      "phoneNumber": "Phone Number",
+      "phoneNumberPlaceholder": "e.g. +123456789",
+      "saveChanges": "Save Changes"
+    },
+    "accountInfo": {
+      "title": "Account Info (Read Only)",
+      "username": "Username",
+      "email": "Email"
+    },
+    "avatar": {
+      "title": "Profile Picture",
+      "upload": "Upload",
+      "uploading": "Uploading...",
+      "change": "Change Avatar",
+      "help": "JPEG or PNG. Max 5MB."
+    },
+    "messages": {
+      "profileUpdated": "Profile updated successfully",
+      "avatarUpdated": "Avatar updated successfully",
+      "avatarFailed": "Failed to upload avatar"
+    }
+  },
+  "security": {
+    "title": "Security",
+    "description": "Manage your password and security preferences.",
+    "form": {
+      "currentPassword": "Current Password",
+      "newPassword": "New Password",
+      "newPasswordHint": "Must be at least 6 characters long.",
+      "confirmPassword": "Confirm Password",
+      "updatePassword": "Update password"
+    },
+    "messages": {
+      "passwordChanged": "Password updated successfully",
+      "passwordFailed": "Failed to update password"
+    }
+  }
+}

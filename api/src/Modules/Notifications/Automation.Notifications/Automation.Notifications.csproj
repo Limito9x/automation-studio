@@ -1,0 +1,24 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <ItemGroup>
+      <ProjectReference Include="..\..\..\SharedKernel\Automation.SharedKernel\Automation.SharedKernel.csproj" />
+      <ProjectReference Include="..\Automation.Notifications.Contracts\Automation.Notifications.Contracts.csproj" />
+    </ItemGroup>
+
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <InternalsVisibleTo Include="Automation.Api" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="MailKit" Version="4.17.0" />
+    </ItemGroup>
+
+</Project>
+
+
