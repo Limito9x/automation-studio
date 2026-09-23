@@ -1,8 +1,9 @@
 import { useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
-import { FileJson, Copy, Check, Braces, Table2 } from "lucide-react";
+import { FileJson, Copy, Check, Braces, Table2, Sparkles } from "lucide-react";
 import type { ResourceVersionDto } from "@/gen/model";
 import { JsonTreeTable } from "@/components/custom-ui/tables/JsonTreeTable";
+import { TagMapPreviewDialog } from "../dialogs/TagMapPreviewDialog";
 import { cn } from "@/lib/utils";
 
 interface ResourceMetadataTabProps {
@@ -12,15 +13,21 @@ interface ResourceMetadataTabProps {
     projectId?: string;
     workspaceId?: string;
     resourceId?: string;
+    resourceName?: string;
+    filePath?: string;
 }
 
 export function ResourceMetadataTab({
     versions,
     selectedVersionId,
     onSelectVersionId,
+    resourceId,
+    resourceName,
+    filePath,
 }: ResourceMetadataTabProps) {
     const [copiedJson, setCopiedJson] = useState(false);
     const [viewMode, setViewMode] = useState<"tree" | "raw">("tree");
+    const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
     const currentVersion = useMemo(() => {
         return versions.find((v) => v.id === selectedVersionId) || versions[0];
@@ -65,65 +72,95 @@ export function ResourceMetadataTab({
             <div className="flex flex-wrap items-center justify-between gap-3 p-3 bg-muted/20 border rounded-xl">
                 <div className="flex items-center gap-1.5 flex-wrap">
                     <span className="text-xs font-semibold text-muted-foreground mr-1">Version:</span>
-                    {versions.map((v) => (
-                        <button
-                            key={v.id}
-                            type="button"
-                            onClick={() => onSelectVersionId(v.id)}
-                            className={cn(
-                                "px-3 py-1 text-xs font-mono rounded-lg border transition-all cursor-pointer",
-                                v.id === currentVersion?.id
-                                    ? "bg-primary text-primary-foreground border-primary shadow-xs font-bold"
-                                    : "bg-card text-muted-foreground hover:text-foreground border-border"
-                            )}
-                        >
-                            v{v.versionNo}
-                        </button>
-                    ))}
+                    {versions.map((v, idx) => {
+                        const isLatest = idx === 0;
+                        const isSelected = v.id === currentVersion?.id;
+                        return (
+                            <button
+                                key={v.id}
+                                type="button"
+                                onClick={() => onSelectVersionId(v.id)}
+                                className={cn(
+                                    "px-2.5 py-1 text-xs font-mono rounded-lg border transition-all cursor-pointer flex items-center gap-1.5",
+                                    isSelected
+                                        ? "bg-primary text-primary-foreground border-primary shadow-xs font-bold"
+                                        : "bg-card text-muted-foreground hover:text-foreground border-border"
+                                )}
+                            >
+                                <span>v{v.versionNo}</span>
+                                {isLatest && (
+                                    <span
+                                        className={cn(
+                                            "text-[9px] px-1.5 py-0.5 rounded font-semibold uppercase tracking-wider",
+                                            isSelected
+                                                ? "bg-primary-foreground/20 text-primary-foreground"
+                                                : "bg-primary/10 text-primary"
+                                        )}
+                                    >
+                                        Active
+                                    </span>
+                                )}
+                            </button>
+                        );
+                    })}
                 </div>
 
-                {metadata && (
-                    <div className="flex items-center gap-2 flex-wrap">
-                        <div className="flex items-center p-0.5 rounded-lg bg-muted border">
-                            <button
-                                type="button"
-                                onClick={() => setViewMode("tree")}
-                                className={cn(
-                                    "px-3 py-1 text-xs font-medium rounded-md transition-all cursor-pointer flex items-center gap-1.5",
-                                    viewMode === "tree"
-                                        ? "bg-background text-foreground shadow-2xs font-semibold"
-                                        : "text-muted-foreground hover:text-foreground"
-                                )}
-                            >
-                                <Table2 className="size-3.5 text-primary" />
-                                <span>Table View</span>
-                            </button>
-                            <button
-                                type="button"
-                                onClick={() => setViewMode("raw")}
-                                className={cn(
-                                    "px-3 py-1 text-xs font-medium rounded-md transition-all cursor-pointer flex items-center gap-1.5",
-                                    viewMode === "raw"
-                                        ? "bg-background text-foreground shadow-2xs font-semibold"
-                                        : "text-muted-foreground hover:text-foreground"
-                                )}
-                            >
-                                <Braces className="size-3.5" />
-                                <span>Raw JSON</span>
-                            </button>
-                        </div>
+                <div className="flex items-center gap-2 flex-wrap">
+                    {/* Preview Tag Map Button */}
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setIsPreviewOpen(true)}
+                        className="gap-1.5 text-xs h-8 cursor-pointer border-amber-500/30 hover:border-amber-500/60 bg-amber-500/5 hover:bg-amber-500/10 text-amber-600 dark:text-amber-400"
+                        title="Preview the exact ObjectsMap and TagMap output that BuildTagMapFromResource generates for this version"
+                    >
+                        <Sparkles className="size-3.5 text-amber-500" />
+                        <span>Preview Tag Map</span>
+                    </Button>
 
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={handleCopyJson}
-                            className="gap-1.5 text-xs h-8 cursor-pointer"
-                        >
-                            {copiedJson ? <Check className="size-3.5 text-emerald-500" /> : <Copy className="size-3.5" />}
-                            <span>{copiedJson ? "Copied" : "Copy"}</span>
-                        </Button>
-                    </div>
-                )}
+                    {metadata && (
+                        <>
+                            <div className="flex items-center p-0.5 rounded-lg bg-muted border">
+                                <button
+                                    type="button"
+                                    onClick={() => setViewMode("tree")}
+                                    className={cn(
+                                        "px-3 py-1 text-xs font-medium rounded-md transition-all cursor-pointer flex items-center gap-1.5",
+                                        viewMode === "tree"
+                                            ? "bg-background text-foreground shadow-2xs font-semibold"
+                                            : "text-muted-foreground hover:text-foreground"
+                                    )}
+                                >
+                                    <Table2 className="size-3.5 text-primary" />
+                                    <span>Table View</span>
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setViewMode("raw")}
+                                    className={cn(
+                                        "px-3 py-1 text-xs font-medium rounded-md transition-all cursor-pointer flex items-center gap-1.5",
+                                        viewMode === "raw"
+                                            ? "bg-background text-foreground shadow-2xs font-semibold"
+                                            : "text-muted-foreground hover:text-foreground"
+                                    )}
+                                >
+                                    <Braces className="size-3.5" />
+                                    <span>Raw JSON</span>
+                                </button>
+                            </div>
+
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={handleCopyJson}
+                                className="gap-1.5 text-xs h-8 cursor-pointer"
+                            >
+                                {copiedJson ? <Check className="size-3.5 text-emerald-500" /> : <Copy className="size-3.5" />}
+                                <span>{copiedJson ? "Copied" : "Copy"}</span>
+                            </Button>
+                        </>
+                    )}
+                </div>
             </div>
 
             {/* Empty State */}
@@ -149,8 +186,8 @@ export function ResourceMetadataTab({
                     {viewMode === "tree" ? (
                         <JsonTreeTable
                             data={metadata}
-                            entityId={currentVersion?.id}
-                            entityType="ResourceVersion"
+                            entityId={resourceId || currentVersion?.id}
+                            entityType={resourceId ? "Resource" : "ResourceVersion"}
                             tagsByPath={tagsByPath}
                         />
                     ) : (
@@ -162,6 +199,20 @@ export function ResourceMetadataTab({
                     )}
                 </div>
             )}
+
+            {/* Tag Map Preview Dialog */}
+            <TagMapPreviewDialog
+                open={isPreviewOpen}
+                onOpenChange={setIsPreviewOpen}
+                resourceId={resourceId}
+                versionId={currentVersion?.id}
+                versionNo={currentVersion?.versionNo}
+                resourceName={resourceName}
+                relativePath={filePath}
+                filePath={filePath}
+                metadata={metadata}
+                tagsByPath={tagsByPath}
+            />
         </div>
     );
 }

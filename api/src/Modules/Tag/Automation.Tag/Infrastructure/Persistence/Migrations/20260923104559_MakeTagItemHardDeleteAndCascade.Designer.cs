@@ -4,6 +4,7 @@ using System.Text.Json;
 using Automation.Tag.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -12,9 +13,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Automation.Tag.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(TagDbContext))]
-    partial class TagDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260923104559_MakeTagItemHardDeleteAndCascade")]
+    partial class MakeTagItemHardDeleteAndCascade
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

@@ -29,6 +29,10 @@ Qua quá trình vận hành thực tế chuỗi xử lý tài sản từ **Blend
    - Đường dẫn index số (`slots[0]`, `streams[1]`) bị lệch hoàn toàn nếu thứ tự các phần tử trong mảng thay đổi ở version mới.
 5. **Dữ liệu Daz / Marketplace thiếu nhất quán:**
    - Asset từ Daz hoặc chợ 3D đặt tên texture rất lộn xộn (`diff_4k`, `albedo`, `nor`, `nm`, `diffuse`). Nếu ngồi kéo thả tag tay thì tốn công, còn viết code `if/else` rule cứng thì không bao giờ bao quát hết.
+6. **Hệ thống Tool và cơ chế phân giải Input bị phân mảnh, trùng lặp:**
+   - Trùng lặp giữa `Utility` và `Collections`: `AppendMapTool` (Utility) và `MergeMapsTool` (Collections) làm cùng 1 việc; `SetMapKey` vs `GetMapItem` lệch quy chuẩn đặt tên; `MakeMap` và `MakeArray` nằm rải rác.
+   - Vênh kiến trúc: Nhiều tool trong `Collections` vẫn dùng interface thô `IResolverTool` tự parse `JsonElement`/`Dictionary` thủ công thay vì dùng chuẩn hiện đại `BaseResolverTool<TIn, TOut>` kèm `[ToolPin]`.
+   - Cơ chế ép kiểu (Type Coercion) trong `PinValueResolver` chưa tập trung, dẫn đến việc các tool phải tự loay hoay xử lý type casting dễ sinh lỗi ngầm.
 
 ---
 
@@ -158,7 +162,43 @@ Hệ thống hỗ trợ 2 tầng xử lý linh hoạt:
 
 ---
 
-## 6. Trụ Cột 5: Tích Hợp AI Auto-Tagging Bằng Structured Output
+## 6. Trụ Cột 5: Chuẩn Hóa Input Resolution & Hợp Nhất Bộ Tool (Collections & Utility)
+
+### 6.1. Hợp Nhất Danh Mục Tool (Collections vs Utility Taxonomy)
+Phân định ranh giới trách nhiệm rõ ràng giữa `Collections` (xử lý dữ liệu cấu trúc) và `Utility` (xử lý chuỗi, đường dẫn và điều khiển luồng):
+
+| Danh mục | Trách nhiệm | Danh sách Tool chuẩn hóa |
+| :--- | :--- | :--- |
+| **`Collections/`** | Toàn bộ thao tác với **Map (Dictionary)** và **Array (List)** | - **Map Suite**: `MakeMapTool`, `GetMapItemTool`, `SetMapItemTool` (hợp nhất từ `SetMapKeyTool`), `MergeMapsTool` (hợp nhất `AppendMapTool` vào đây), `GetMapKeysTool`, `GetMapValuesTool`, `ZipToMapTool`.<br>- **Array Suite**: `MakeArrayTool`, `GetArrayItemTool`, `GetCollectionCountTool`. |
+| **`Utility/`** | Thao tác chuỗi, đường dẫn đĩa, laser extraction và flow control | - **Chuỗi & Đường dẫn**: `FormatStringTool`, `AppendStringTool`, `CombinePathTool`.<br>- **Trích xuất JSON**: `GetByPathTool` (Laser Extraction qua JSONPath).<br>- **Khác**: `StaticValueTool`, `ForEachLoopTool`, `BeginExecuteTool`. |
+
+- **Loại bỏ trùng lặp:**
+  - Xóa `AppendMapTool` (Utility), chuyển toàn bộ logic gộp Map về `MergeMapsTool` (Collections).
+  - Chuẩn hóa tên gọi: `SetMapKeyTool` $\rightarrow$ `SetMapItemTool` (để song hành đối xứng với `GetMapItemTool`). Giữ alias `SetMapKey`, `AddMapItem` để không làm gãy các pipeline cũ.
+  - Đưa `MakeMapTool` và `MakeArrayTool` từ `Utility` về đúng `Collections`.
+
+### 6.2. Quy Chuẩn Hóa Toàn Bộ Tool sang `BaseResolverTool<TIn, TOut>`
+- Chuyển đổi 100% các tool còn dùng interface `IResolverTool` thủ công (`MergeMapsTool`, `GetMapItemTool`, `ZipToMapTool`, `GetMapKeysTool`, `GetMapValuesTool`, `GetArrayItemTool`) sang `BaseResolverTool<TInput, TOutput>`.
+- **Lợi ích:**
+  - Tự động hóa Model Binding thông qua `ToolModelBinder` và attribute `[ToolPin]`.
+  - Loại bỏ hoàn toàn hơn 200 dòng boilerplate code parse `JsonElement`, `IDictionary`, `string` lặp đi lặp lại ở từng tool.
+  - Đảm bảo tính nhất quán (Consistency) trong toàn bộ module `Pipeline`.
+
+### 6.3. Tách Tầng Ép Kiểu Dữ Liệu Tập Trung (`PinTypeCoercer`)
+- Thay vì để từng Tool tự `switch-case` kiểm tra kiểu dữ liệu đầu vào:
+  - Xây dựng `PinTypeCoercer`: Nhận `object?` và tự động ép kiểu chuẩn xác sang `T` mong muốn (`Dictionary<string, object?>`, `List<T>`, `string`, `int`, `bool`, etc.).
+  - Xử lý mượt mà sự khác biệt giữa `JsonElement` (từ API/JSON), `string` (JSON raw text), và strongly-typed C# objects.
+- **Làm sạch `PinValueResolver.cs`:**
+  - Chuẩn hóa chuỗi ưu tiên phân giải:
+    1. **Wire Connection** (Dây nối từ node trước - Pure Node tự tính on-demand, Task Node đọc cache).
+    2. **Memoized Cache** (Bộ nhớ đệm trong phiên thực thi).
+    3. **Scope / Loop Context** (Biến vòng lặp `ForEachLoopTool`).
+    4. **Start Input** (Tham số đầu vào của Pipeline).
+    5. **Default Value / Config** (Giá trị mặc định trên node).
+
+---
+
+## 7. Trụ Cột 6: Tích Hợp AI Auto-Tagging Bằng Structured Output
 
 ### 6.1. Giải pháp cho dữ liệu Daz / Marketplace hỗn loạn
 Thay vì viết hàng nghìn dòng `if/else` để đoán tên file texture bát nháo của Daz, ta sử dụng LLM Vision/Text Flash (như **Gemini 2.0 Flash / 1.5 Flash** hoặc **GPT-4o-mini**) làm bài toán **Classification**:
@@ -201,13 +241,14 @@ Thay vì viết hàng nghìn dòng `if/else` để đoán tên file texture bát
 
 ---
 
-## 7. Lộ Trình Triển Khai (Phased Roadmap)
+## 8. Lộ Trình Triển Khai (Phased Roadmap)
 
 ```mermaid
 graph TD
-    A[Phase 1: Tinh giản Bake & Inspector] --> B[Phase 2: Chuyển Tag sang Resource & Semantic JSONPath]
-    B --> C[Phase 3: Cập nhật Resolve & Unreal Material Ingestion]
-    C --> D[Phase 4: Tích hợp AI Auto-Tagging]
+    A[Phase 1: Tinh giản Bake & Inspector] --> B[Phase 2: Tái Cấu Trúc Input Resolution & Hợp Nhất Tool]
+    B --> C[Phase 3: Chuyển Tag sang Resource & Semantic JSONPath]
+    C --> D[Phase 4: Tinh gọn Resolve & Unreal Material Ingestion]
+    D --> E[Phase 5: Tích hợp AI Auto-Tagging]
 ```
 
 ### Phase 1: Tinh giản Bake & Inspector (Blender Worker)
@@ -216,16 +257,24 @@ graph TD
 - [x] Tinh giản `inspect_unified_mesh.py` và `inspect_separated_meshes.py`: loại bỏ hoàn toàn regex đoán hint rườm rà, thu thập danh sách file paths đóng góp thực tế, bổ sung cơ chế quét folder textures.
 - [x] Chuẩn hóa output metadata thành dạng danh sách textures phẳng tinh gọn (danh sách file paths, hiển thị gọn đẹp trên `JsonTreeTable`).
 
-### Phase 2: Chuyển Tag sang Resource & Semantic JSONPath (Backend .NET)
-- [ ] Cập nhật module `Tag` và `Workspace`: Gắn tag theo `EntityType = "Resource"` thay vì `ResourceVersion`.
-- [ ] Nâng cấp hàm `MetadataExtensions.ExtractJsonValue` hỗ trợ cú pháp `[name='...']`.
-- [ ] Cập nhật `BuildTagMapFromResourceTool` đọc metadata từ Active Version và tag từ Resource.
+### Phase 2: Tái Cấu Trúc Input Resolution & Hợp Nhất Bộ Tool (Backend .NET)
+- [x] Xóa bỏ trùng lặp tool: Hợp nhất `AppendMapTool` vào `MergeMapsTool`, chuẩn hóa `SetMapKeyTool` $\rightarrow$ `SetMapItemTool` (giữ alias cũ), chuyển `MakeMapTool` & `MakeArrayTool` từ `Utility` về `Collections`.
+- [x] Chuyển đổi 100% các tool trong `Collections/` (`GetMapItemTool`, `MergeMapsTool`, `ZipToMapTool`, `GetMapKeysTool`, `GetMapValuesTool`, `GetArrayItemTool`, `GetCollectionCountTool`, `RemapKeysTool`) sang chuẩn `BaseResolverTool<TIn, TOut>` với `[ToolPin]`.
+- [x] Xây dựng tầng `PinTypeCoercer` tập trung: Tự động chuyển đổi an toàn giữa `JsonElement`, `IDictionary`, `IEnumerable`, `string` trước khi bind vào Tool.
+- [x] Tinh gọn và làm sạch `PinValueResolver.cs`: Chuẩn hóa ép kiểu Cardinality & Type qua `PinTypeCoercer.Coerce`.
+- [x] Dọn dẹp các artifact sinh mã lỗi thời của Wolverine (`Internal/Generated`) và đảm bảo `dotnet build` toàn bộ solution đạt 0 warning / 0 error.
+- [x] Bổ sung / cập nhật Unit Tests trong `Automation.Pipeline.Tests` để verify toàn bộ suite tool Collections & Utility mới (100% 84/84 tests pass).
 
-### Phase 3: Tinh gọn Resolve & Unreal Setup (Python Worker)
-- [ ] Đơn giản hóa `resolve_material_manifest.py`: Bóc tách anchor theo `[name='...']`, gom trực tiếp dictionary textures.
-- [ ] Đồng bộ khâu `setup_asset_materials.py` và `register_appearance_datatable.py` theo convention mới.
+### Phase 3: Chuyển Tag sang Resource & Semantic JSONPath (Backend .NET)
+- [x] Cập nhật module `Tag` và `Workspace`: Gắn tag theo `EntityType = "Resource"` thay vì `ResourceVersion`.
+- [x] Nâng cấp hàm `MetadataExtensions.ExtractJsonValue` hỗ trợ cú pháp `[name='...']`.
+- [x] Cập nhật `BuildTagMapFromResourceTool` đọc metadata từ Active Version và tag từ Resource.
 
-### Phase 4: Tích hợp AI Auto-Tagging (Backend / Worker / UI)
+### Phase 4: Tinh gọn Resolve & Unreal Setup (Python Worker)
+- [x] Đơn giản hóa `resolve_material_manifest.py`: Bóc tách anchor theo `[name='...']`, gom trực tiếp dictionary textures.
+- [x] Đồng bộ khâu `setup_asset_materials.py` và `register_appearance_datatable.py` theo convention mới.
+
+### Phase 5: Tích hợp AI Auto-Tagging (Backend / Worker / UI)
 - [ ] Xây dựng service gọi Gemini 2.0 Flash với JSON Schema Structured Output để phân loại Asset.
 - [ ] Thêm nút bấm `✨ Auto-Tag` trên giao diện `JsonTreeTable` ở Frontend.
 - [ ] Tạo node `AutoTagResourceAITool` trên Pipeline Canvas.

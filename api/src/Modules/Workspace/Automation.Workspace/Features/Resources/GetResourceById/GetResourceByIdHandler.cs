@@ -23,6 +23,11 @@ public class GetResourceByIdHandler(WorkspaceDbContext db, ITagApi tagApi)
         if (resource is null)
             return Result.Fail($"Resource with ID '{query.Id}' was not found.");
 
+        // 1. Query Resource-level tags (the primary source of truth for semantic sub-path tags)
+        var resourceTagResult = await tagApi.GetTagsByEntityAsync("Resource", resource.Id, ct);
+        var resourceLinks = resourceTagResult.IsSuccess && resourceTagResult.Value != null ? resourceTagResult.Value : [];
+
+        // 2. Query legacy ResourceVersion tags for backward compatibility
         var versionIds = resource.Versions.Select(v => v.Id).ToList();
         var tagsByVersion = new Dictionary<Guid, IReadOnlyList<TagLinkDetailDto>>();
 
@@ -39,8 +44,13 @@ public class GetResourceByIdHandler(WorkspaceDbContext db, ITagApi tagApi)
             .OrderByDescending(v => v.VersionNo)
             .Select(v =>
             {
-                var links = tagsByVersion.GetValueOrDefault(v.Id) ?? [];
-                var tagsByPath = links
+                var versionLinks = tagsByVersion.GetValueOrDefault(v.Id) ?? [];
+                var combinedLinks = resourceLinks
+                    .Where(t => !string.IsNullOrEmpty(t.TargetSubPath))
+                    .Concat(versionLinks)
+                    .ToList();
+
+                var tagsByPath = combinedLinks
                     .GroupBy(t => !string.IsNullOrEmpty(t.TargetSubPath) ? t.TargetSubPath : TagMigrationHelper.ExtractPath(t.MetadataJson))
                     .Where(g => !string.IsNullOrEmpty(g.Key))
                     .ToDictionary(g => g.Key, g => (IReadOnlyList<TagLinkDetailDto>)g.ToList());

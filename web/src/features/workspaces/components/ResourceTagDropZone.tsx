@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { useDroppable } from "@dnd-kit/core";
 import { Tag as TagIcon, X, Plus } from "lucide-react";
 import { useTagLinks, useDeleteTagLink } from "@/features/tags/hooks/useTags";
@@ -34,7 +35,13 @@ export function ResourceTagDropZone({
         data: payload,
     });
 
-    const tags = (tagLinks as TagLinkDetailDto[]) || [];
+    // Only display root Resource-level tags (where targetSubPath is empty or null)
+    // Sub-path tags (textures, materials, slots) are rendered inside their respective JsonTreeTable cells.
+    const tags = useMemo(() => {
+        return ((tagLinks as TagLinkDetailDto[]) || []).filter(
+            (tag) => !tag.targetSubPath || tag.targetSubPath.trim() === ""
+        );
+    }, [tagLinks]);
 
     return (
         <div

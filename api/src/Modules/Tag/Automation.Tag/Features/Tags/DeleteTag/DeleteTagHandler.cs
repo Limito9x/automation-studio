@@ -18,10 +18,22 @@ public class DeleteTagHandler(TagDbContext db)
             var descendants = await db.TagItems
                 .Where(x => x.ProjectId == tag.ProjectId && x.Path.IsDescendantOf(tag.Path))
                 .ToListAsync(ct);
-            db.TagItems.RemoveRange(descendants);
+
+            // Sort descendants deepest path first so children are deleted before parent
+            var sortedDescendants = descendants
+                .OrderByDescending(x => x.Path.ToString().Count(c => c == '.'))
+                .ToList();
+
+            db.TagItems.RemoveRange(sortedDescendants);
         }
         else
         {
+            var hasChildren = await db.TagItems.AnyAsync(x => x.ParentId == tag.Id, ct);
+            if (hasChildren)
+            {
+                return Result.Fail("Cannot delete tag because it has child tags. Specify DeleteChildren to remove descendants.");
+            }
+
             db.TagItems.Remove(tag);
         }
 

@@ -299,18 +299,28 @@ public class WorkspaceApi(WorkspaceDbContext db, IMessageBus bus, ITagApi tagApi
         if (version == null)
             return Result.Fail("Resource version not found.");
 
-        var tagResult = await tagApi.GetTagsByEntityAsync("ResourceVersion", version.Id, ct);
+        var resourceTagResult = await tagApi.GetTagsByEntityAsync("Resource", version.ResourceId, ct);
+        var resourceLinks = resourceTagResult.IsSuccess && resourceTagResult.Value != null
+            ? resourceTagResult.Value
+            : [];
 
-        var tagsByPath =
-            tagResult.IsSuccess && tagResult.Value != null
-                ? tagResult
-                    .Value.GroupBy(t =>
-                        !string.IsNullOrEmpty(t.TargetSubPath)
-                            ? t.TargetSubPath
-                            : TagMigrationHelper.ExtractPath(t.MetadataJson)
-                    )
-                    .ToDictionary(g => g.Key, g => (IReadOnlyList<TagLinkDetailDto>)g.ToList())
-                : new Dictionary<string, IReadOnlyList<TagLinkDetailDto>>();
+        var versionTagResult = await tagApi.GetTagsByEntityAsync("ResourceVersion", version.Id, ct);
+        var versionLinks = versionTagResult.IsSuccess && versionTagResult.Value != null
+            ? versionTagResult.Value
+            : [];
+
+        var combinedLinks = resourceLinks
+            .Where(t => !string.IsNullOrEmpty(t.TargetSubPath))
+            .Concat(versionLinks)
+            .ToList();
+
+        var tagsByPath = combinedLinks
+            .GroupBy(t =>
+                !string.IsNullOrEmpty(t.TargetSubPath)
+                    ? t.TargetSubPath
+                    : TagMigrationHelper.ExtractPath(t.MetadataJson)
+            )
+            .ToDictionary(g => g.Key, g => (IReadOnlyList<TagLinkDetailDto>)g.ToList());
 
         return Result.Ok(
             new Contracts.Dtos.ResourceMetadataDetailDto(version.Id, version.Metadata, tagsByPath)
@@ -422,20 +432,32 @@ public class WorkspaceApi(WorkspaceDbContext db, IMessageBus bus, ITagApi tagApi
                 fullPath = relPath;
             }
 
+            var allResourceTags = resourceTagsMap.TryGetValue(v.ResourceId, out var rTags)
+                ? rTags
+                : Array.Empty<TagLinkDetailDto>();
+
             var versionTags = versionTagsMap.TryGetValue(v.Id, out var vTags)
                 ? vTags
                 : Array.Empty<TagLinkDetailDto>();
-            var tagMap = versionTags
+
+            // Root Resource tags (not bound to sub-paths)
+            var rootResourceTags = allResourceTags
+                .Where(t => string.IsNullOrEmpty(t.TargetSubPath))
+                .ToList();
+
+            // Sub-path tags: combine Resource-level sub-path tags with legacy Version tags
+            var combinedSubpathTags = allResourceTags
+                .Where(t => !string.IsNullOrEmpty(t.TargetSubPath))
+                .Concat(versionTags)
+                .ToList();
+
+            var tagMap = combinedSubpathTags
                 .GroupBy(t =>
                     !string.IsNullOrEmpty(t.TargetSubPath)
                         ? t.TargetSubPath
                         : TagMigrationHelper.ExtractPath(t.MetadataJson)
                 )
                 .ToDictionary(g => g.Key, g => (IReadOnlyList<TagLinkDetailDto>)g.ToList());
-
-            var resourceTags = resourceTagsMap.TryGetValue(v.ResourceId, out var rTags)
-                ? rTags
-                : Array.Empty<TagLinkDetailDto>();
 
             var itemDto = new Contracts.Dtos.ResourceBatchItemDto(
                 v.ResourceId,
@@ -444,7 +466,7 @@ public class WorkspaceApi(WorkspaceDbContext db, IMessageBus bus, ITagApi tagApi
                 relPath,
                 fullPath,
                 v.Metadata,
-                resourceTags,
+                rootResourceTags,
                 tagMap
             );
 

@@ -191,6 +191,8 @@ export function ResourceDetailPage({
                                 projectId={projectId}
                                 workspaceId={workspaceId}
                                 resourceId={resourceId}
+                                resourceName={resource?.displayName || resource?.name}
+                                filePath={resource?.filePath || resource?.relativePath}
                             />
                         )}
 
