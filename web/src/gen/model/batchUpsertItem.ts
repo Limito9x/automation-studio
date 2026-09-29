@@ -6,19 +6,22 @@
  */
 import type { EdgeReconciliationStrategy } from "./edgeReconciliationStrategy";
 
-export interface UpdateCustomNodeRequest {
+export interface BatchUpsertItem {
+  key: string;
   name: string;
   /** @nullable */
   label: string | null;
   /** @nullable */
   executor: string | null;
   /** @nullable */
-  assetId: string | null;
+  contentHash: string | null;
   /** @nullable */
   originalFileName: string | null;
+  /** @nullable */
+  assetId: string | null;
   /** @nullable */
   inputs: unknown[] | null;
   /** @nullable */
   outputs: unknown[] | null;
-  edgeReconciliationStrategy?: EdgeReconciliationStrategy;
+  strategy?: EdgeReconciliationStrategy;
 }
