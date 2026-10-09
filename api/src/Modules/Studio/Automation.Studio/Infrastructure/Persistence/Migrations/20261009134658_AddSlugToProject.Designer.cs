@@ -3,6 +3,7 @@ using System;
 using Automation.Studio.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Automation.Studio.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(StudioDbContext))]
-    partial class StudioDbContextModelSnapshot : ModelSnapshot
+    [Migration("20261009134658_AddSlugToProject")]
+    partial class AddSlugToProject
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

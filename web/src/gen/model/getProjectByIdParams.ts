@@ -6,16 +6,9 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export interface UpdateProjectCommand {
+export type GetProjectByIdParams = {
   /**
-   * @minLength 0
-   * @maxLength 255
-   */
-  name: string;
-  /**
-   * @minLength 0
-   * @maxLength 150
    * @nullable
    */
-  slug?: string | null;
-}
+  studioKeyOrId?: string | null;
+};
